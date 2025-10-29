@@ -35,7 +35,7 @@ class Tapmatomo(Tap):
             th.StringType(nullable=False),
             required=True,
             title="idSite",
-            description="The integer id of your website,you can also specify a list of idSites comma separated, eg. idSite=1,4,5,6",
+            description="The integer id of your website, or a comma-separated list of idSites, e.g. idSite=1,4,5,6",
         ),
         th.Property(
             "method",
