@@ -34,7 +34,7 @@ class matomoStream(RESTStream):
     @property
     def url_base(self) -> str:
         """Return the API URL root, configurable via tap settings."""
-        return self.config.get("api_url")  # noqa: ERA001
+        return self.config.get("api_url","")  # noqa: ERA001
 
     @property
     @override
