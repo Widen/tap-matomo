@@ -23,11 +23,11 @@ class Tapmatomo(Tap):
     # TODO: Update this section with the actual config values you expect:
     config_jsonschema = th.PropertiesList(
         th.Property(
-            "auth_token",
+            "token_auth",
             th.StringType(nullable=False),
             required=True,
-            secret=True,  # Flag config as protected.
-            title="Auth Token",
+            secret=True,
+            title="Token Auth",
             description="The token to authenticate against the API service",
         ),
         th.Property(

@@ -6,6 +6,8 @@ import decimal
 import sys
 import typing as t
 from importlib import resources
+import requests
+
 
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.pagination import BaseAPIPaginator  # noqa: TC002
@@ -44,9 +46,9 @@ class matomoStream(RESTStream):
         Returns:
             A dictionary of HTTP headers.
         """
-        # If not using an authenticator, you may also provide inline auth headers:
-        # headers["Private-Token"] = self.config.get("auth_token")  # noqa: ERA001
-        return {}
+        return {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
 
     @override
     def get_new_paginator(self) -> BaseAPIPaginator | None:
@@ -84,6 +86,7 @@ class matomoStream(RESTStream):
         Returns:
             A dictionary of URL query parameters.
         """
+
         params: dict = {}
         params = {
             "module":"API",
@@ -93,13 +96,13 @@ class matomoStream(RESTStream):
             "date": self.config.get("date"),
             "format": self.config.get("format"),
             "filter_limit": self.config.get("filter_limit"),
+
         }
         if next_page_token:
             params["page"] = next_page_token
         if self.replication_key:
             params["sort"] = "asc"
             params["order_by"] = self.replication_key
-        logging.info("API request URL:", self.url_base, "Params:", params)
         return params
 
     @override
@@ -108,21 +111,31 @@ class matomoStream(RESTStream):
         context: Context | None,
         next_page_token: t.Any | None,
     ) -> dict | None:
-        """Prepare the data payload for the REST API request.
+        data = {"token_auth": self.config.get("token_auth")}
+        return data
 
-        By default, no payload will be sent (return None).
+    @override
+    def prepare_request(
+        self,
+        context: Context | None,
+        next_page_token: t.Any | None,
+    ) -> requests.PreparedRequest:
+        """Prepare the request."""
 
-        Args:
-            context: The stream context.
-            next_page_token: The next page index or value.
 
-        Returns:
-            A dictionary with the JSON body for a POST requests.
-        """
-        # TODO: Delete this method if no payload is required. (Most REST APIs.)
-        payload = {"auth_token": self.config.get("auth_token")}
-        # logging.info("API request body:", {payload})
-        return payload
+        http_method = self.request_method
+        url = self.get_url(context)
+        params = self.get_url_params(context, next_page_token)
+        headers = self.http_headers
+        payload = self.prepare_request_payload(context, next_page_token)
+
+        return requests.Request(
+            method=http_method,
+            url=url,
+            params=params,
+            headers=headers,
+            data=payload
+        ).prepare()
 
     @override
     def parse_response(self, response: requests.Response) -> t.Iterable[dict]:
@@ -140,23 +153,4 @@ class matomoStream(RESTStream):
             input=response.json(parse_float=decimal.Decimal),
         )
 
-    @override
-    def post_process(
-        self,
-        row: dict,
-        context: Context | None = None,
-    ) -> dict | None:
-        """As needed, append or transform raw data to match expected structure.
 
-        Note: As of SDK v0.47.0, this method is automatically executed for all stream types.
-        You should not need to call this method directly in custom `get_records` implementations.
-
-        Args:
-            row: An individual record from the stream.
-            context: The stream context.
-
-        Returns:
-            The updated record dictionary, or ``None`` to skip the record.
-        """
-        # TODO: Delete this method if not needed.
-        return row

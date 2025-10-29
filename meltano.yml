@@ -22,7 +22,7 @@ plugins:
     # TODO: Declare settings and their types here:
     settings:
     - name: idSite
-    - name: auth_token
+    - name: token_auth
       kind: password
       sensitive: true
     - name: method
