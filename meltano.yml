@@ -1,0 +1,43 @@
+version: 1
+send_anonymous_usage_stats: true
+project_id: "tap-matomo"
+default_environment: test
+venv:
+  backend: uv
+environments:
+- name: test
+plugins:
+  extractors:
+  - name: "tap-matomo"
+    namespace: "tap_matomo"
+    pip_url: -e .
+    capabilities:
+    - state
+    - catalog
+    - discover
+    - about
+    - stream-maps
+    - structured-logging
+
+    # TODO: Declare settings and their types here:
+    settings:
+    - name: idSite
+    - name: token_auth
+      kind: password
+      sensitive: true
+    - name: method
+    - name: period
+    - name: date
+    - name: api_url
+    - name: format
+    - name: filter_limit
+
+
+  loaders:
+  - name: target-jsonl
+    variant: andyh1203
+    pip_url: target-jsonl
+
+
+
+
