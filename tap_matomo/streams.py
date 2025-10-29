@@ -14,7 +14,7 @@ class VisitsDetails(matomoStream):
 
     name = "VisitsDetails"
     path = ""
-    primary_keys: t.ClassVar[list[str]] = ["idSite","timestamp","pageId"]
+    primary_keys: t.ClassVar[list[str]] = ["idSite","idVisit"]
     replication_key = None
     schema = th.PropertiesList(
         th.Property("idSite", th.IntegerType),
@@ -138,6 +138,7 @@ class VisitsDetails(matomoStream):
         th.Property("providerName", th.StringType),
         th.Property("providerUrl", th.StringType),
     ).to_dict()
+
 
 
 
