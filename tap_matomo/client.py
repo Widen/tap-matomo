@@ -1,7 +1,7 @@
 """REST client handling, including matomoStream base class."""
 
 from __future__ import annotations
-
+import logging
 import decimal
 import sys
 import typing as t
@@ -21,10 +21,6 @@ if t.TYPE_CHECKING:
     from singer_sdk.helpers.types import Context
 
 
-# TODO: Delete this is if not using json files for schema definition
-SCHEMAS_DIR = resources.files(__package__) / "schemas"
-
-
 class matomoStream(RESTStream):
     """matomo stream class."""
 
@@ -38,8 +34,7 @@ class matomoStream(RESTStream):
     @property
     def url_base(self) -> str:
         """Return the API URL root, configurable via tap settings."""
-        # TODO: hardcode a value here, or retrieve it from self.config
-        return "https://api.mysample.com"
+        return self.config.get("api_url")  # noqa: ERA001
 
     @property
     @override
@@ -70,6 +65,10 @@ class matomoStream(RESTStream):
         """
         return super().get_new_paginator()
 
+    @property
+    def request_method(self) -> str:
+        return "POST"
+
     @override
     def get_url_params(
         self,
@@ -86,11 +85,21 @@ class matomoStream(RESTStream):
             A dictionary of URL query parameters.
         """
         params: dict = {}
+        params = {
+            "module":"API",
+            "method": self.config.get("method"),
+            "idSite": self.config.get("idSite"),
+            "period": self.config.get("period"),
+            "date": self.config.get("date"),
+            "format": self.config.get("format"),
+            "filter_limit": self.config.get("filter_limit"),
+        }
         if next_page_token:
             params["page"] = next_page_token
         if self.replication_key:
             params["sort"] = "asc"
             params["order_by"] = self.replication_key
+        logging.info("API request URL:", self.url_base, "Params:", params)
         return params
 
     @override
@@ -111,7 +120,9 @@ class matomoStream(RESTStream):
             A dictionary with the JSON body for a POST requests.
         """
         # TODO: Delete this method if no payload is required. (Most REST APIs.)
-        return None
+        payload = {"auth_token": self.config.get("auth_token")}
+        # logging.info("API request body:", {payload})
+        return payload
 
     @override
     def parse_response(self, response: requests.Response) -> t.Iterable[dict]:

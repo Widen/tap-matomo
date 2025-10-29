@@ -9,58 +9,158 @@ from singer_sdk import typing as th  # JSON Schema typing helpers
 
 from tap_matomo.client import matomoStream
 
-# TODO: Delete this is if not using json files for schema definition
-SCHEMAS_DIR = resources.files(__package__) / "schemas"
-# TODO: - Override `UsersStream` and `GroupsStream` with your own stream definition.
-#       - Copy-paste as many times as needed to create multiple stream types.
-
-
-class UsersStream(matomoStream):
+class VisitsDetails(matomoStream):
     """Define custom stream."""
 
-    name = "users"
-    path = "/users"
-    primary_keys: t.ClassVar[list[str]] = ["id"]
+    name = "VisitsDetails"
+    path = ""
+    primary_keys: t.ClassVar[list[str]] = ["idSite","lastActionTimestamp"]
     replication_key = None
-    # Optionally, you may also use `schema_filepath` in place of `schema`:
-    # schema_filepath = SCHEMAS_DIR / "users.json"  # noqa: ERA001
     schema = th.PropertiesList(
-        th.Property("name", th.StringType),
+        th.Property("idSite", th.StringType),
+        th.Property("idVisit", th.StringType),
+        th.Property("visitIp", th.StringType),
+        th.Property("visitorId", th.StringType),
+        th.Property("fingerprint", th.StringType),
         th.Property(
-            "id",
-            th.StringType,
-            description="The user's system ID",
+            "actionDetails",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("type", th.StringType),
+                    th.Property("url", th.StringType),
+                    th.Property("pageTitle", th.StringType),
+                    th.Property("pageIdAction", th.StringType),
+                    th.Property("idpageview", th.StringType),
+                    th.Property("serverTimePretty", th.StringType),
+                    th.Property("pageId", th.StringType),
+                    th.Property("pageLoadTime", th.StringType),
+                    th.Property("timeSpent", th.StringType),
+                    th.Property("timeSpentPretty", th.StringType),
+                    th.Property("pageLoadTimeMilliseconds", th.StringType),
+                    th.Property("pageviewPosition", th.StringType),
+                    th.Property("title", th.StringType),
+                    th.Property("subtitle", th.StringType),
+                    th.Property("icon", th.StringType),
+                    th.Property("iconSVG", th.StringType),
+                    th.Property("timestamp", th.StringType),
+                    th.Property("eventCategory", th.StringType),
+                    th.Property("eventAction", th.StringType),
+                    th.Property("eventName", th.StringType),
+                    th.Property("eventValue", th.StringType),
+                    th.Property("idsite", th.StringType),
+                    th.Property("player_name", th.StringType),
+                    th.Property("media_type", th.StringType),
+                    th.Property("resolution", th.StringType),
+                    th.Property("fullscreen", th.StringType),
+                    th.Property("media_title", th.StringType),
+                    th.Property("time_to_initial_play", th.StringType),
+                    th.Property("watched_time", th.StringType),
+                    th.Property("media_progress", th.StringType),
+                    th.Property("media_length", th.StringType),
+                )
+            ),
         ),
-        th.Property(
-            "age",
-            th.IntegerType,
-            description="The user's age in years",
-        ),
-        th.Property(
-            "email",
-            th.StringType,
-            description="The user's email address",
-        ),
-        th.Property("street", th.StringType),
+        th.Property("goalConversions", th.StringType),
+        th.Property("siteCurrency", th.StringType),
+        th.Property("siteCurrencySymbol", th.StringType),
+        th.Property("serverDate", th.StringType),
+        th.Property("visitServerHour", th.StringType),
+        th.Property("lastActionTimestamp", th.StringType),
+        th.Property("lastActionDateTime", th.StringType),
+        th.Property("siteName", th.StringType),
+        th.Property("serverTimestamp", th.StringType),
+        th.Property("firstActionTimestamp", th.StringType),
+        th.Property("serverTimePretty", th.StringType),
+        th.Property("serverDatePretty", th.StringType),
+        th.Property("serverDatePrettyFirstAction", th.StringType),
+        th.Property("serverTimePrettyFirstAction", th.StringType),
+        th.Property("userId", th.StringType),
+        th.Property("visitorType", th.StringType),
+        th.Property("visitorTypeIcon", th.StringType),
+        th.Property("visitConverted", th.StringType),
+        th.Property("visitConvertedIcon", th.StringType),
+        th.Property("visitCount", th.StringType),
+        th.Property("visitEcommerceStatus", th.StringType),
+        th.Property("visitEcommerceStatusIcon", th.StringType),
+        th.Property("daysSinceFirstVisit", th.StringType),
+        th.Property("secondsSinceFirstVisit", th.StringType),
+        th.Property("daysSinceLastEcommerceOrder", th.StringType),
+        th.Property("secondsSinceLastEcommerceOrder", th.StringType),
+        th.Property("visitDuration", th.StringType),
+        th.Property("visitDurationPretty", th.StringType),
+        th.Property("searches", th.StringType),
+        th.Property("actions", th.StringType),
+        th.Property("interactions", th.StringType),
+        th.Property("referrerType", th.StringType),
+        th.Property("referrerTypeName", th.StringType),
+        th.Property("referrerName", th.StringType),
+        th.Property("referrerKeyword", th.StringType),
+        th.Property("referrerKeywordPosition", th.StringType),
+        th.Property("referrerUrl", th.StringType),
+        th.Property("referrerSearchEngineUrl", th.StringType),
+        th.Property("referrerSearchEngineIcon", th.StringType),
+        th.Property("referrerSocialNetworkUrl", th.StringType),
+        th.Property("referrerSocialNetworkIcon", th.StringType),
+        th.Property("languageCode", th.StringType),
+        th.Property("language", th.StringType),
+        th.Property("deviceType", th.StringType),
+        th.Property("deviceTypeIcon", th.StringType),
+        th.Property("deviceBrand", th.StringType),
+        th.Property("deviceModel", th.StringType),
+        th.Property("operatingSystem", th.StringType),
+        th.Property("operatingSystemName", th.StringType),
+        th.Property("operatingSystemIcon", th.StringType),
+        th.Property("operatingSystemCode", th.StringType),
+        th.Property("operatingSystemVersion", th.StringType),
+        th.Property("browserFamily", th.StringType),
+        th.Property("browserFamilyDescription", th.StringType),
+        th.Property("browser", th.StringType),
+        th.Property("browserName", th.StringType),
+        th.Property("browserIcon", th.StringType),
+        th.Property("browserCode", th.StringType),
+        th.Property("browserVersion", th.StringType),
+        th.Property("events", th.StringType),
+        th.Property("continent", th.StringType),
+        th.Property("continentCode", th.StringType),
+        th.Property("country", th.StringType),
+        th.Property("countryCode", th.StringType),
+        th.Property("countryFlag", th.StringType),
+        th.Property("region", th.StringType),
+        th.Property("regionCode", th.StringType),
         th.Property("city", th.StringType),
+        th.Property("location", th.StringType),
+        th.Property("latitude", th.StringType),
+        th.Property("longitude", th.StringType),
+        th.Property("visitLocalTime", th.StringType),
+        th.Property("visitLocalHour", th.StringType),
+        th.Property("daysSinceLastVisit", th.StringType),
+        th.Property("secondsSinceLastVisit", th.StringType),
+        th.Property("resolution", th.StringType),
+        th.Property("plugins", th.StringType),
         th.Property(
-            "state",
-            th.StringType,
-            description="State name in ISO 3166-2 format",
+            "pluginsIcons",
+            th.ArrayType(
+                th.ObjectType(
+                    th.Property("pluginIcon", th.StringType),
+                    th.Property("pluginName", th.StringType),
+                )
+            ),
         ),
-        th.Property("zip", th.StringType),
+        th.Property("experiments", th.ArrayType(th.StringType)),
+        th.Property("adClickId", th.StringType),
+        th.Property("adProviderId", th.StringType),
+        th.Property("adProviderName", th.StringType),
+        th.Property("formConversions", th.StringType),
+        th.Property("sessionReplayUrl", th.StringType),
+        th.Property("campaignId", th.StringType),
+        th.Property("campaignContent", th.StringType),
+        th.Property("campaignKeyword", th.StringType),
+        th.Property("campaignMedium", th.StringType),
+        th.Property("campaignName", th.StringType),
+        th.Property("campaignSource", th.StringType),
+        th.Property("campaignGroup", th.StringType),
+        th.Property("campaignPlacement", th.StringType),
     ).to_dict()
 
 
-class GroupsStream(matomoStream):
-    """Define custom stream."""
 
-    name = "groups"
-    path = "/groups"
-    primary_keys: t.ClassVar[list[str]] = ["id"]
-    replication_key = "modified"
-    schema = th.PropertiesList(
-        th.Property("name", th.StringType),
-        th.Property("id", th.StringType),
-        th.Property("modified", th.DateTimeType),
-    ).to_dict()

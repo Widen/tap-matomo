@@ -15,7 +15,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 
-
 class Tapmatomo(Tap):
     """matomo tap class."""
 
@@ -32,31 +31,52 @@ class Tapmatomo(Tap):
             description="The token to authenticate against the API service",
         ),
         th.Property(
-            "project_ids",
-            th.ArrayType(th.StringType(nullable=False), nullable=False),
+            "idSite",
+            th.StringType(nullable=False),
             required=True,
-            title="Project IDs",
-            description="Project IDs to replicate",
+            title="idSite",
+            description="The integer id of your website,you can also specify a list of idSites comma separated, eg. idSite=1,4,5,6",
         ),
         th.Property(
-            "start_date",
+            "method",
+            th.StringType(nullable=False),
+            required=True,
+            default="Live.getLastVisitsDetails",
+            title="method",
+            description="The API method you want to call.",
+        ),
+        th.Property(
+            "period",
+            th.StringType(nullable=False),
+            required=True,
+            default="day",
+            title="period",
+            description="The period you request the statistics for. Can be any of: day, week, month, year or range. All reports are returned for the dates based on the website's time zone.",
+        ),
+        th.Property(
+            "date",
             th.DateTimeType(nullable=True),
-            description="The earliest record date to sync",
+            description="standard format = YYYY-MM-DD or magic keywords = today, yesterday, lastWeek, lastMonth or lastYear. These are relative the website timezone. ",
         ),
         th.Property(
             "api_url",
             th.StringType(nullable=False),
             title="API URL",
-            default="https://api.mysample.com",
             description="The url for the API service",
         ),
         th.Property(
-            "user_agent",
-            th.StringType(nullable=True),
-            description=(
-                "A custom User-Agent header to send with each request. Default is "
-                "'<tap_name>/<tap_version>'"
-            ),
+            "format",
+            th.StringType(nullable=False),
+            default='json',
+            title="format",
+            description="Defines the format of the output.",
+        ),
+        th.Property(
+            "filter_limit",
+            th.StringType(nullable=False),
+            default='1000',
+            title="filter_limit",
+            description="Defines the format of the output.",
         ),
     ).to_dict()
 
@@ -68,8 +88,7 @@ class Tapmatomo(Tap):
             A list of discovered streams.
         """
         return [
-            streams.GroupsStream(self),
-            streams.UsersStream(self),
+            streams.VisitsDetails(self),
         ]
 
 
