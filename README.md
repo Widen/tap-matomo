@@ -38,8 +38,38 @@ tap-matomo --about --format=markdown
 ```
 -->
 
-A full list of supported settings and capabilities for this
-tap is available by running:
+## Capabilities
+
+- `catalog`
+- `state`
+- `discover`
+- `activate-version`
+- `about`
+- `stream-maps`
+- `schema-flattening`
+- `batch`
+- `structured-logging`
+
+## Supported Python Versions
+
+- 3.10
+- 3.11
+- 3.12
+- 3.13
+
+## Settings
+
+| Setting | Required | Default | Description |
+|:--------|:--------:|:-------:|:------------|
+| api_url | True | None | The url for the API service |
+| token_auth | True | None | The token to authenticate against the API service |
+| idSite | True | None | The integer id of your website, or a comma-separated list of idSites, e.g. idSite=1,4,5,6 |
+| method | False | Live.getLastVisitsDetails | The API method you want to call. |
+| period | False | day | The period you request the statistics for. Can be any of: day, week, month, year or range. All reports are returned for the dates based on the website's time zone. |
+| date | False | None | standard format = YYYY-MM-DD or magic keywords = today, yesterday, lastWeek, lastMonth or lastYear. These are relative the website timezone.  |
+| format | False | json | Defines the format of the output. |
+| filter_limit | False | None | defines the number of rows to be returned, By default, only the top 100 rows are returned,Set to -1 to return all rows |
+
 
 ```bash
 tap-matomo --about
@@ -53,9 +83,7 @@ environment variable is set either in the terminal context or in the `.env` file
 
 ### Source Authentication and Authorization
 
-<!--
-Developer TODO: If your tap requires special access on the source system, or any special authentication requirements, provide those here.
--->
+Refer to the [Matomo API Authentication documentation](https://developer.matomo.org/api-reference/reporting-api#Live).
 
 ## Usage
 
