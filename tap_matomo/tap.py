@@ -23,6 +23,13 @@ class Tapmatomo(Tap):
     # TODO: Update this section with the actual config values you expect:
     config_jsonschema = th.PropertiesList(
         th.Property(
+            "api_url",
+            th.StringType(nullable=False),
+            required=True,
+            title="API URL",
+            description="The url for the API service",
+        ),
+        th.Property(
             "token_auth",
             th.StringType(nullable=False),
             required=True,
@@ -40,7 +47,6 @@ class Tapmatomo(Tap):
         th.Property(
             "method",
             th.StringType(nullable=False),
-            required=True,
             default="Live.getLastVisitsDetails",
             title="method",
             description="The API method you want to call.",
@@ -48,7 +54,6 @@ class Tapmatomo(Tap):
         th.Property(
             "period",
             th.StringType(nullable=False),
-            required=True,
             default="day",
             title="period",
             description="The period you request the statistics for. Can be any of: day, week, month, year or range. All reports are returned for the dates based on the website's time zone.",
@@ -59,12 +64,6 @@ class Tapmatomo(Tap):
             description="standard format = YYYY-MM-DD or magic keywords = today, yesterday, lastWeek, lastMonth or lastYear. These are relative the website timezone. ",
         ),
         th.Property(
-            "api_url",
-            th.StringType(nullable=False),
-            title="API URL",
-            description="The url for the API service",
-        ),
-        th.Property(
             "format",
             th.StringType(nullable=False),
             default='json',
@@ -73,10 +72,9 @@ class Tapmatomo(Tap):
         ),
         th.Property(
             "filter_limit",
-            th.StringType(nullable=False),
-            default='1000',
+            th.StringType(nullable=True),
             title="filter_limit",
-            description="Defines the format of the output.",
+            description="defines the number of rows to be returned, By default, only the top 100 rows are returned,Set to -1 to return all rows",
         ),
     ).to_dict()
 
