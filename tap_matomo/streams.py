@@ -137,6 +137,7 @@ class VisitsDetails(matomoStream):
         th.Property("provider", th.StringType),
         th.Property("providerName", th.StringType),
         th.Property("providerUrl", th.StringType),
+        th.Property("truncatedActionsCount", th.IntegerType)
     ).to_dict()
 
 

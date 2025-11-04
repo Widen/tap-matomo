@@ -10,7 +10,7 @@ import requests
 
 
 from singer_sdk.helpers.jsonpath import extract_jsonpath
-from singer_sdk.pagination import BaseAPIPaginator  # noqa: TC002
+from singer_sdk.pagination import BaseAPIPaginator, BasePageNumberPaginator  # noqa: TC002
 from singer_sdk.streams import RESTStream
 
 if sys.version_info >= (3, 12):
@@ -22,15 +22,58 @@ if t.TYPE_CHECKING:
     import requests
     from singer_sdk.helpers.types import Context
 
+class MatomoOffsetPaginator(BasePageNumberPaginator):
+    """Paginator for Matomo API using filter_offset."""
+
+    def __init__(self, start_value: int, page_size: int, *args, **kwargs) -> None:
+        """Initialize paginator.
+
+        Args:
+            start_value: Initial offset value.
+            page_size: Number of records per page (filter_limit).
+        """
+        super().__init__(start_value, *args, **kwargs)
+        self._page_size = int(page_size)
+        self._has_more = True
+        self._pagination_disabled = int(page_size) == -1
+        if self._pagination_disabled:
+            logging.info("Pagination disabled (filter_limit=-1)")
+
+    @override
+    def has_more(self, response: requests.Response) -> bool:
+        """Check if there are more pages.
+
+        Args:
+            response: HTTP response object.
+
+        Returns:
+            True if there are more pages to fetch.
+        """
+        if self._pagination_disabled:
+            return False
+        data = response.json()
+
+        return bool(data)
+
+    @override
+    def get_next(self, response: requests.Response) -> int | None:
+        """Get the next offset value.
+
+        Args:
+            response: HTTP response object.
+
+        Returns:
+            Next offset value or None if no more pages.
+        """
+        if self._pagination_disabled or not self.has_more(response):
+            return None
+        current = int(self.current_value) if isinstance(self.current_value, str) else self.current_value
+        return current + self._page_size
+
 
 class matomoStream(RESTStream):
     """matomo stream class."""
-
-    # Update this value if necessary or override `parse_response`.
     records_jsonpath = "$[*]"
-
-    # Update this value if necessary or override `get_new_paginator`.
-    next_page_token_jsonpath = "$.next_page"  # noqa: S105
 
     @override
     @property
@@ -54,18 +97,13 @@ class matomoStream(RESTStream):
     def get_new_paginator(self) -> BaseAPIPaginator | None:
         """Create a new pagination helper instance.
 
-        If the source API can make use of the `next_page_token_jsonpath`
-        attribute, or it contains a `X-Next-Page` header in the response
-        then you can remove this method.
-
-        If you need custom pagination that uses page numbers, "next" links, or
-        other approaches, please read the guide: https://sdk.meltano.com/en/v0.25.0/guides/pagination-classes.html.
-
         Returns:
-            A pagination helper instance, or ``None`` to indicate pagination
-            is not supported.
+            A pagination helper instance for offset-based pagination.
         """
-        return super().get_new_paginator()
+        return MatomoOffsetPaginator(
+            start_value=0,
+            page_size=self.config.get("filter_limit", 100)
+        )
 
     @property
     def request_method(self) -> str:
@@ -98,8 +136,9 @@ class matomoStream(RESTStream):
             "filter_limit": self.config.get("filter_limit"),
 
         }
-        if next_page_token:
-            params["page"] = next_page_token
+        # Add filter_offset for pagination
+        if next_page_token is not None:
+            params["filter_offset"] = next_page_token
         if self.replication_key:
             params["sort"] = "asc"
             params["order_by"] = self.replication_key
@@ -152,5 +191,26 @@ class matomoStream(RESTStream):
             self.records_jsonpath,
             input=response.json(parse_float=decimal.Decimal),
         )
+    @override
+    def validate_response(self, response: requests.Response) -> None:
+        """Validate response and raise exception if error found.
 
+        Args:
+            response: HTTP response object.
+
+        Raises:
+            Exception: If response contains an error.
+        """
+        super().validate_response(response)
+
+        try:
+            data = response.json()
+            # Check if response contains an error
+            if isinstance(data, dict) and "result" in data and data["result"] == "error":
+                error_message = data.get("message", "Unknown error occurred")
+                logging.error(f"Matomo API Error: {error_message}")
+                raise Exception(f"Matomo API Error: {error_message}")
+        except ValueError:
+            # Response is not JSON, let parent class handle it
+            pass
 
